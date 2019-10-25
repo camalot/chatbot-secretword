@@ -1,0 +1,79 @@
+{
+	"output_file": "settings.json",
+	"OnlyWhenLive": {
+		"type": "checkbox",
+		"label": "Enable Only When Live",
+		"value": true,
+		"tooltip": "Only works when live. Will clear the secret word when going offline",
+		"group": "DEFAULT"
+	},
+	"Points": {
+		"type": "slider",
+		"label": "Award Points",
+		"value": 100,
+		"min": 0,
+		"max": 10000,
+		"ticks": 100,
+		"tooltip": "The Number of points to award to the user that uses the secret word.",
+		"group": "DEFAULT"
+	},
+	"SoundFile": {
+		"type": "textbox",
+		"label": "Sound File Full Path",
+		"value": "",
+		"tooltip": "The full path to the sound file to play.",
+		"group": "DEFAULT"
+	},
+	"SoundVolume": {
+		"type": "slider",
+		"label": "Sound Volume",
+		"value": 100,
+		"min": 0,
+		"max": 100,
+		"ticks": 1,
+		"tooltip": "The sound volume.",
+		"group": "DEFAULT"
+	},
+	"Response": {
+		"type": "textbox",
+		"label": "Response",
+		"value": "@$username Discovered the secret word: $secretword and was awarded $awardedpoints $currencyname (total: $points $currencyname) - !secretword",
+		"tooltip": "The message response.\n$secretword = The Secret Word\n$awardedpoints = Points awarded.\n$username = Username\n$currencyname = The currency name\n$points = Users total points.",
+		"group": "DEFAULT"
+	},
+	"OpenWordFile": {
+		"type": "button",
+		"label": "Edit Words File",
+		"tooltip": "Add / Remove words from the word file.",
+		"function": "OpenWordFile",
+		"wsevent": "EVENT_NONE"
+	},
+	"OpenDonateLink": {
+		"type": "button",
+		"label": "Donate",
+		"tooltip": "Donate to support development",
+		"function": "OpenDonateLink",
+		"wsevent": "EVENT_NONE"
+	},
+	"OpenFollowOnTwitchLink": {
+		"type": "button",
+		"label": "Follow Me On Twitch",
+		"tooltip": "Get Medal",
+		"function": "OpenFollowOnTwitchLink",
+		"wsevent": "EVENT_NONE"
+	},
+	"OpenReadMeLink": {
+		"type": "button",
+		"label": "Open ReadMe",
+		"tooltip": "Open ReadMe file",
+		"function": "OpenReadMeLink",
+		"wsevent": "EVENT_NONE"
+	},
+	"OpenScriptUpdater": {
+		"type": "button",
+		"label": "Check For Updates",
+		"tooltip": "Check for updates",
+		"function": "OpenScriptUpdater",
+		"wsevent": "EVENT_NONE"
+	}
+}
