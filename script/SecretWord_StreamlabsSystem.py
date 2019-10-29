@@ -87,7 +87,7 @@ def Init():
     if KnownBots is None:
         botData = json.loads(json.loads(Parent.GetRequest(
             "https://api.twitchinsights.net/v1/bots/online", {}))['response'])['bots']
-        KnownBots = [bot[0] for bot in botData]
+        KnownBots = [bot[0].lower() for bot in botData]
     # Load saved settings and validate values
     ScriptSettings = Settings(SettingsFile)
 
@@ -162,7 +162,6 @@ def ScriptToggled(state):
 # [Optional] Reload Settings (Called when a user clicks the Save Settings button in the Chatbot UI)
 # ---------------------------------------
 
-#### IT IS NOT RELOADING THE SETTINGS ON SAVE
 def ReloadSettings(jsondata):
     Parent.Log(ScriptName, "Reload Settings")
     # Reload saved settings and validate values
@@ -199,7 +198,7 @@ def SetSecretWord():
     Parent.Log(ScriptName, "SECRET WORD: " + str(CurrentSecretWord))
 
 def IsTwitchBot(user):
-    return user in KnownBots
+    return user.lower() in KnownBots
 
 def str2bool(v):
     if not v:
