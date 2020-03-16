@@ -172,11 +172,11 @@ def ReloadSettings(jsondata):
 
 
 def Parse(parseString, user, target, message):
-    resultString = parseString
+    resultString = parseString or ""
     resultString = resultString.replace("$awardedpoints", str(int(ScriptSettings.Points)))
-    resultString = resultString.replace("$secretword", CurrentSecretWord)
-    resultString = resultString.replace("$username", user)
-    resultString = resultString.replace("$userid", target)
+    resultString = resultString.replace("$secretword", CurrentSecretWord or "")
+    resultString = resultString.replace("$username", user or "")
+    resultString = resultString.replace("$userid", target or "")
     resultString = resultString.replace("$currencyname", Parent.GetCurrencyName())
     resultString = resultString.replace("$points", str(int(Parent.GetPoints(target))))
     return resultString
