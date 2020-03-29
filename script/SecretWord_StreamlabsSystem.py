@@ -85,9 +85,13 @@ def Init():
     Parent.Log(ScriptName, "Initialize")
 
     if KnownBots is None:
-        botData = json.loads(json.loads(Parent.GetRequest(
-            "https://api.twitchinsights.net/v1/bots/online", {}))['response'])['bots']
-        KnownBots = [bot[0].lower() for bot in botData]
+        try:
+            botData = json.loads(json.loads(Parent.GetRequest(
+                "https://api.twitchinsights.net/v1/bots/online", {}))['response'])['bots']
+            KnownBots = [bot[0].lower() for bot in botData]
+        except:
+            Parent.Log(ScriptName, str(e))
+            KnownBots = []
     # Load saved settings and validate values
     ScriptSettings = Settings(SettingsFile)
 
