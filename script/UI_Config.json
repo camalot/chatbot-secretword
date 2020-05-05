@@ -48,11 +48,25 @@
 		"function": "OpenWordFile",
 		"wsevent": "EVENT_NONE"
 	},
-	"OpenDonateLink": {
+	"OpenGithubDonateLink": {
 		"type": "button",
-		"label": "Donate",
+		"label": "💚 Support on Github",
 		"tooltip": "Donate to support development",
-		"function": "OpenDonateLink",
+		"function": "OpenGithubDonateLink",
+		"wsevent": "EVENT_NONE"
+	},
+	"OpenPaypalDonateLink": {
+		"type": "button",
+		"label": "💙 Support on Paypal",
+		"tooltip": "Donate to support development",
+		"function": "OpenPaypalDonateLink",
+		"wsevent": "EVENT_NONE"
+	},
+	"OpenTwitchDonateLink": {
+		"type": "button",
+		"label": "💜 Support on Twitch",
+		"tooltip": "Donate to support development",
+		"function": "OpenTwitchDonateLink",
 		"wsevent": "EVENT_NONE"
 	},
 	"OpenFollowOnTwitchLink": {
