@@ -1,4 +1,5 @@
 var DEFAULT_SETTINGS = {
+  "DebugMode": false,
   "OnlyWhenLive": true,
   "Points": 100,
   "SoundFile": "",

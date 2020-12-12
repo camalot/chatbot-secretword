@@ -1,5 +1,12 @@
 {
 	"output_file": "settings.json",
+	"DebugMode": {
+		"type": "checkbox",
+		"label": "Enable Debug Mode",
+		"value": false,
+		"tooltip": "If enabled, will log higher level of events.",
+		"group": "DEFAULT"
+	},
 	"OnlyWhenLive": {
 		"type": "checkbox",
 		"label": "Enable Only When Live",
