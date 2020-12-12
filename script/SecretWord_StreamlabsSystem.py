@@ -16,6 +16,8 @@ import shutil
 import tempfile
 from HTMLParser import HTMLParser
 import argparse
+import logging
+from logging.handlers import TimedRotatingFileHandler
 
 clr.AddReference("IronPython.SQLite.dll")
 clr.AddReference("IronPython.Modules.dll")
@@ -36,6 +38,7 @@ Version = "1.0.0-snapshot"
 Repo = "camalot/chatbot-secretword"
 ReadMeFile = "https://github.com/" + Repo + "/blob/develop/ReadMe.md"
 
+UIConfigFile = os.path.join(os.path.dirname(__file__), "UI_Config.json")
 WordFile = os.path.join(os.path.dirname(os.path.realpath(__file__)), "./secretwords.txt")
 SettingsFile = os.path.join(os.path.dirname(os.path.realpath(__file__)), "settings.json")
 ScriptSettings = None
@@ -44,43 +47,102 @@ Initialized = False
 CurrentSecretWord = None
 CurrentWordRegex = None
 KnownBots = None
+Logger = None
 
 class Settings(object):
     """ Class to hold the script settings, matching UI_Config.json. """
 
     def __init__(self, settingsfile=None):
         """ Load in saved settings file if available else set default values. """
+        defaults = self.DefaultSettings(UIConfigFile)
         try:
-            self.SoundFile = ""
-            self.SoundVolume = 100
-            self.Points = 100
-            self.OnlyWhenLive = True
-            self.Response = "@$username Discovered the secret word: $secretword and was awarded $awardedpoints $currencyname (total: $points $currencyname)"
             with codecs.open(settingsfile, encoding="utf-8-sig", mode="r") as f:
-                fileSettings = json.load(f, encoding="utf-8")
-                self.__dict__.update(fileSettings)
+                settings = json.load(f, encoding="utf-8")
+            self.__dict__ = Merge(defaults, settings)
+        except Exception as ex:
+            if Logger:
+                Logger.error(str(ex))
+            else:
+                Parent.Log(ScriptName, str(ex))
+            self.__dict__ = defaults
 
-        except Exception as e:
-            Parent.Log(ScriptName, str(e))
-
+    def DefaultSettings(self, settingsfile=None):
+        defaults = dict()
+        with codecs.open(settingsfile, encoding="utf-8-sig", mode="r") as f:
+            ui = json.load(f, encoding="utf-8")
+        for key in ui:
+            if 'value' in ui[key]:
+                try:
+                    defaults[key] = ui[key]['value']
+                except:
+                    if key != "output_file":
+                        if Logger:
+                            Logger.warn("DefaultSettings(): Could not find key {0} in settings".format(key))
+                        else:
+                            Parent.Log(ScriptName, "DefaultSettings(): Could not find key {0} in settings".format(key))
+        return defaults
     def Reload(self, jsonData):
         """ Reload settings from the user interface by given json data. """
-        Parent.Log(ScriptName, "Reload Settings")
-        fileLoadedSettings = json.loads(jsonData, encoding="utf-8")
-        self.__dict__.update(fileLoadedSettings)
+        if Logger:
+            Logger.debug("Reload Settings")
+        else:
+            Parent.Log(ScriptName, "Reload Settings")
+        self.__dict__ = Merge(self.DefaultSettings(UIConfigFile), json.loads(jsonData, encoding="utf-8"))
 
 
+class StreamlabsLogHandler(logging.StreamHandler):
+    def emit(self, record):
+        try:
+            message = self.format(record)
+            Parent.Log(ScriptName, message)
+            self.flush()
+        except (KeyboardInterrupt, SystemExit):
+            raise
+        except:
+            self.handleError(record)
 
+def GetLogger():
+    log = logging.getLogger(ScriptName)
+    log.setLevel(logging.DEBUG)
+
+    sl = StreamlabsLogHandler()
+    sl.setFormatter(logging.Formatter("%(funcName)s(): %(message)s"))
+    sl.setLevel(logging.INFO)
+    log.addHandler(sl)
+
+    fl = TimedRotatingFileHandler(filename=os.path.join(os.path.dirname(
+        __file__), "info"), when="w0", backupCount=8, encoding="utf-8")
+    fl.suffix = "%Y%m%d"
+    fl.setFormatter(logging.Formatter(
+        "%(asctime)s  %(funcName)s(): %(levelname)s: %(message)s"))
+    fl.setLevel(logging.INFO)
+    log.addHandler(fl)
+
+    if ScriptSettings.DebugMode:
+        dfl = TimedRotatingFileHandler(filename=os.path.join(os.path.dirname(
+            __file__), "debug"), when="h", backupCount=24, encoding="utf-8")
+        dfl.suffix = "%Y%m%d%H%M%S"
+        dfl.setFormatter(logging.Formatter(
+            "%(asctime)s  %(funcName)s(): %(levelname)s: %(message)s"))
+        dfl.setLevel(logging.DEBUG)
+        log.addHandler(dfl)
+
+    log.debug("Logger initialized")
+    return log
 
 def Init():
     global ScriptSettings
     global Initialized
     global KnownBots
-    if Initialized:
-        Parent.Log(ScriptName, "Skip Initialization. Already Initialized.")
-        return
+    global Logger
 
-    Parent.Log(ScriptName, "Initialize")
+    if Initialized:
+        Logger.debug("Skip Initialization. Already Initialized.")
+        return
+    ScriptSettings = Settings(SettingsFile)
+    Logger = GetLogger()
+
+    Logger.debug("Initialize")
 
     if KnownBots is None:
         try:
@@ -88,10 +150,9 @@ def Init():
                 "https://api.twitchinsights.net/v1/bots/online", {}))['response'])['bots']
             KnownBots = [bot[0].lower() for bot in botData]
         except:
-            Parent.Log(ScriptName, str(e))
+            Logger.error(str(e))
             KnownBots = []
     # Load saved settings and validate values
-    ScriptSettings = Settings(SettingsFile)
 
     if CurrentSecretWord is None:
         SetSecretWord()
@@ -148,13 +209,13 @@ def Tick():
     return
 
 def ScriptToggled(state):
-    Parent.Log(ScriptName, "State Changed: " + str(state))
+    Logger.debug("State Changed: " + str(state))
     if state:
         Init()
         if CurrentSecretWord is None:
             SetSecretWord()
         else:
-            Parent.Log(ScriptName, "Current Word is already: " + CurrentSecretWord)
+            Logger.debug("Current Word is already: " + CurrentSecretWord)
     else:
         Unload()
         ClearSecretWord()
@@ -165,7 +226,7 @@ def ScriptToggled(state):
 # ---------------------------------------
 
 def ReloadSettings(jsondata):
-    Parent.Log(ScriptName, "Reload Settings")
+    Logger.debug("Reload Settings")
     # Reload saved settings and validate values
     Unload()
     Init()
@@ -197,10 +258,33 @@ def SetSecretWord():
     CurrentSecretWord = random_line(WordFile)
     CurrentWordRegex = re.compile(r"\b{0}\b".format(CurrentSecretWord.lower()), re.UNICODE)
 
-    Parent.Log(ScriptName, "SECRET WORD: " + str(CurrentSecretWord))
+    Logger.debug("SECRET WORD: " + str(CurrentSecretWord))
 
 def IsTwitchBot(user):
     return user.lower() in KnownBots
+
+
+def Merge(source, destination):
+    """
+    >>> a = { 'first' : { 'all_rows' : { 'pass' : 'dog', 'number' : '1' } } }
+    >>> b = { 'first' : { 'all_rows' : { 'fail' : 'cat', 'number' : '5' } } }
+    >>> merge(b, a) == { 'first' : { 'all_rows' : { 'pass' : 'dog', 'fail' : 'cat', 'number' : '5' } } }
+    True
+    """
+    for key, value in source.items():
+        if isinstance(value, dict):
+            # get node or create one
+            node = destination.setdefault(key, {})
+            Merge(value, node)
+        elif isinstance(value, list):
+            destination.setdefault(key, value)
+        else:
+            if key in destination:
+                pass
+            else:
+                destination.setdefault(key, value)
+
+    return destination
 
 def str2bool(v):
     if not v:
@@ -224,15 +308,15 @@ def OpenScriptUpdater():
     currentDir = os.path.realpath(os.path.dirname(__file__))
     chatbotRoot = os.path.realpath(os.path.join(currentDir, "../../../"))
     libsDir = os.path.join(currentDir, "libs/updater")
-    Parent.Log(ScriptName, libsDir)
+    Logger.debug(libsDir)
     try:
         src_files = os.listdir(libsDir)
         tempdir = tempfile.mkdtemp()
-        Parent.Log(ScriptName, tempdir)
+        Logger.debug(tempdir)
         for file_name in src_files:
             full_file_name = os.path.join(libsDir, file_name)
             if os.path.isfile(full_file_name):
-                Parent.Log(ScriptName, "Copy: " + full_file_name)
+                Logger.debug("Copy: " + full_file_name)
                 shutil.copy(full_file_name, tempdir)
         updater = os.path.join(tempdir, "ApplicationUpdater.exe")
         updaterConfigFile = os.path.join(tempdir, "update.manifest")
@@ -262,9 +346,9 @@ def OpenScriptUpdater():
                 "name": repoVals[1]
             }
         }
-        Parent.Log(ScriptName, updater)
+        Logger.debug(updater)
         configJson = json.dumps(updaterConfig)
-        Parent.Log(ScriptName, configJson)
+        Logger.debug(configJson)
         with open(updaterConfigFile, "w+") as f:
             f.write(configJson)
         os.startfile(updater)
