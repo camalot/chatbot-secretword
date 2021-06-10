@@ -1,4 +1,5 @@
-# CHATBOT TWITCH TEAM
+# CHATBOT SECRET WORD
+[![Secret Word](https://github.com/camalot/chatbot-secretword/actions/workflows/build.yml/badge.svg)](https://github.com/camalot/chatbot-secretword/actions/workflows/build.yml)
 
 A script that will automatically shoutout a streamer from the specified twitch team.
 
@@ -11,7 +12,7 @@ A script that will automatically shoutout a streamer from the specified twitch t
 
 ## INSTALL
 
-- Download the latest zip file from [Releases](https://github.com/camalot/chatbot-shoutout/releases/latest)
+- Download the latest zip file from [Releases](https://github.com/camalot/chatbot-secretword/releases/latest)
 - Right-click on the downloaded zip file and choose `Properties`
 - Click on `Unblock`  
 [![](https://i.imgur.com/vehSSn7l.png)](https://i.imgur.com/vehSSn7.png)  
