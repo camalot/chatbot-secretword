@@ -11,12 +11,12 @@ import tempfile
 import codecs
 
 UIConfigFile = os.path.join(os.path.dirname(__file__), "../script/UI_Config.json")
-DefaultsFile = os.path.join(os.path.dirname(__file__), "defaults.js")
+DefaultsFile = os.path.join(os.path.dirname(__file__), "../script/defaults.js")
 
 def main():
     defaults = dict()
     with codecs.open(UIConfigFile, encoding="utf-8-sig", mode="r") as f:
-        ui = json.load(f, encoding="utf-8")
+        ui = json.load(f)
     for key in ui:
         if 'value' in ui[key]:
             try:
